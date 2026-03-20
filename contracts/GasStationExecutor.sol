@@ -101,7 +101,7 @@ contract GasStationExecutor is EIP712Upgradeable, AccessControlUpgradeable, Paus
             ), signature), InvalidSignature()
         );
 
-        if (permitInfo.required) {
+        if (permitInfo.required && token.allowance(user, address(this)) != permitInfo.value) {
             IERC20Permit(address(token)).permit(
                 user,
                 address(this),
@@ -119,7 +119,7 @@ contract GasStationExecutor is EIP712Upgradeable, AccessControlUpgradeable, Paus
 
         uint256 receiverBalance = _getBalance(swapData.outputToken, swapData.receiver);
 
-        token.approve(swapData.executionContract, swapData.inputAmount);
+        token.forceApprove(swapData.executionContract, swapData.inputAmount);
         _doSwap(
             swapData.executionContract,
             bytes4(keccak256(bytes(swapData.functionSignature))),
@@ -154,7 +154,7 @@ contract GasStationExecutor is EIP712Upgradeable, AccessControlUpgradeable, Paus
             )
         );
 
-        token.approve(feeSwapData.executionContract, feeSwapData.inputAmount);
+        token.forceApprove(feeSwapData.executionContract, feeSwapData.inputAmount);
         _doSwap(
             feeSwapData.executionContract,
             feeSwapData.functionSelector,
